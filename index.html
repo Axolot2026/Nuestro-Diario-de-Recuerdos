@@ -1,0 +1,855 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nuestros Albun Personal ✨</title>
+
+  
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: #2b231f;
+      background-image: radial-gradient(#3d322c 1px, transparent 1px);
+      background-size: 20px 20px;
+      color: #f5ebe6;
+      font-family: 'Nunito', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 1.5rem;
+    }
+
+    /* PANTALLA DE AUTENTICACIÓN */
+    .auth-container {
+      width: 100%;
+      max-width: 380px;
+      margin: auto;
+      background: #362c27;
+      padding: 2.2rem;
+      border-radius: 20px;
+      box-shadow: 0 12px 35px rgba(0, 0, 0, 0.6);
+      border: 2px solid #423630;
+      text-align: center;
+    }
+
+    .auth-container h2 {
+      color: #e8a598;
+      font-family: 'Caveat', cursive;
+      font-size: 2.8rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .auth-container p {
+      color: #d8cac4;
+      font-size: 0.9rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .auth-tabs {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 1.5rem;
+      background: #231b18;
+      padding: 4px;
+      border-radius: 12px;
+    }
+
+    .auth-tab {
+      flex: 1;
+      background: transparent;
+      border: none;
+      color: #d8cac4;
+      padding: 0.5rem;
+      font-weight: 700;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .auth-tab.active {
+      background: #d88373;
+      color: #fff;
+    }
+
+    /* HEADER Y ÁLBUM */
+    .app-header {
+      width: 100%;
+      max-width: 900px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-bottom: 2rem;
+    }
+
+    .app-header h1 {
+      color: #e8a598;
+      font-family: 'Caveat', cursive;
+      font-size: 3.2rem;
+      margin-bottom: 0.5rem;
+      text-shadow: 1px 2px 4px rgba(0, 0, 0, 0.4);
+    }
+
+    .user-bar {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-top: 0.8rem;
+    }
+
+    .user-email {
+      font-size: 0.85rem;
+      color: #d8cac4;
+      background: #362c27;
+      padding: 0.3rem 0.8rem;
+      border-radius: 12px;
+      border: 1px solid #423630;
+    }
+
+    .admin-badge {
+      background: #d88373;
+      color: #fff;
+      font-size: 0.75rem;
+      padding: 0.2rem 0.5rem;
+      border-radius: 8px;
+      margin-left: 0.4rem;
+      font-weight: bold;
+    }
+
+    .btn-add, .btn-submit, .btn-logout {
+      font-weight: 700;
+      border: none;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .btn-add {
+      background: linear-gradient(135deg, #d88373, #b85b4d);
+      color: #fff;
+      padding: 0.7rem 1.4rem;
+      font-size: 1rem;
+      border-radius: 25px;
+      box-shadow: 0 4px 14px rgba(184, 91, 77, 0.4);
+    }
+
+    .btn-add:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 18px rgba(184, 91, 77, 0.6);
+      background: linear-gradient(135deg, #e28e7e, #c46456);
+    }
+
+    .btn-submit {
+      width: 100%;
+      background: #d88373;
+      color: #fff;
+      padding: 0.7rem;
+      border-radius: 12px;
+      font-size: 1rem;
+      margin-top: 0.5rem;
+    }
+
+    .btn-logout {
+      background: transparent;
+      border: 1px solid #423630;
+      color: #d8cac4;
+      padding: 0.4rem 0.8rem;
+      border-radius: 12px;
+      font-size: 0.8rem;
+    }
+
+    .btn-logout:hover {
+      background: #423630;
+      color: #fff;
+    }
+
+    .form-group {
+      margin-bottom: 1rem;
+      display: flex;
+      flex-direction: column;
+      text-align: left;
+    }
+
+    .form-group label {
+      margin-bottom: 0.3rem;
+      font-size: 0.85rem;
+      color: #d8cac4;
+      font-weight: 700;
+    }
+
+    .form-group input, .form-group textarea {
+      padding: 0.65rem;
+      border-radius: 10px;
+      border: 1.5px solid #423630;
+      background-color: #231b18;
+      color: #f5ebe6;
+      font-family: inherit;
+      font-size: 0.9rem;
+      outline: none;
+    }
+
+    .form-group input:focus, .form-group textarea:focus {
+      border-color: #d88373;
+    }
+
+    .album-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(135px, 1fr));
+      gap: 1.5rem;
+      width: 100%;
+      max-width: 900px;
+      padding: 0.5rem;
+    }
+
+    .thumb-card {
+      width: 100%;
+      aspect-ratio: 9 / 16;
+      border-radius: 12px;
+      overflow: hidden;
+      cursor: pointer;
+      position: relative;
+      border: 4px solid #423630;
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.5);
+      transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.3s ease, border-color 0.3s;
+      background: #1f1815;
+    }
+
+    .thumb-card:hover {
+      transform: scale(1.06) rotate(1deg);
+      box-shadow: 0 10px 24px rgba(216, 131, 115, 0.35);
+      border-color: #d88373;
+    }
+
+    .thumb-card img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .heart-cover {
+      position: absolute;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(35, 27, 24, 0.55);
+      backdrop-filter: blur(5px);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 2;
+      transition: opacity 0.5s ease, transform 0.5s ease;
+    }
+
+    .heart-cover .heart-icon {
+      font-size: 2.3rem;
+      filter: drop-shadow(0 2px 8px rgba(216, 131, 115, 0.6));
+      animation: pulseHeart 1.8s infinite alternate;
+    }
+
+    .heart-cover span {
+      font-size: 0.75rem;
+      color: #f5ebe6;
+      margin-top: 0.4rem;
+      font-weight: 700;
+      background: rgba(66, 54, 48, 0.85);
+      padding: 3px 10px;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .thumb-card.revealed .heart-cover {
+      opacity: 0;
+      transform: scale(1.1);
+      pointer-events: none;
+    }
+
+    @keyframes pulseHeart {
+      0% { transform: scale(0.95); }
+      100% { transform: scale(1.15); }
+    }
+
+    /* LIGHTBOX & MODAL */
+    .lightbox-overlay, .modal-overlay {
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(18, 13, 11, 0.88);
+      backdrop-filter: blur(8px);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+      z-index: 200;
+    }
+
+    .lightbox-overlay.active, .modal-overlay.active {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    .lightbox-card-container {
+      width: 85vw; max-width: 330px;
+      height: 75vh; max-height: 570px;
+      perspective: 1000px;
+    }
+
+    .lightbox-card {
+      width: 100%; height: 100%;
+      position: relative;
+      transform-style: preserve-3d;
+      transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .lightbox-card-container.flipped .lightbox-card {
+      transform: rotateY(180deg);
+    }
+
+    .lightbox-front, .lightbox-back {
+      position: absolute;
+      width: 100%; height: 100%;
+      backface-visibility: hidden;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6);
+      border: 5px solid #423630;
+    }
+
+    .lightbox-front {
+      cursor: pointer;
+      background-color: #1a1412;
+    }
+
+    .lightbox-front img {
+      width: 100%; height: 100%;
+      object-fit: contain;
+      background-color: #1a1412;
+    }
+
+    .lightbox-back {
+      background-color: #362c27;
+      color: #f5ebe6;
+      transform: rotateY(180deg);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 1.5rem;
+      text-align: center;
+      background-image: linear-gradient(#2b231f 1px, transparent 1px);
+      background-size: 100% 1.6rem;
+    }
+
+    .lightbox-back-content {
+      cursor: pointer;
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .lightbox-back h3 {
+      margin-bottom: 0.8rem;
+      color: #e8a598;
+      font-family: 'Caveat', cursive;
+      font-size: 2.2rem;
+    }
+
+    .lightbox-back p {
+      font-size: 1rem;
+      line-height: 1.6;
+      color: #d8cac4;
+      overflow-y: auto;
+      max-height: 250px;
+    }
+
+    .lightbox-back .date {
+      margin-top: 1rem;
+      font-size: 0.85rem;
+      color: #e8a598;
+      font-weight: 700;
+      background: #231b18;
+      padding: 0.4rem 0.9rem;
+      border-radius: 12px;
+      border: 1px solid #423630;
+    }
+
+    .card-actions {
+      display: flex; gap: 0.6rem;
+      justify-content: center;
+      margin-top: 0.8rem; padding-top: 0.6rem;
+      border-top: 1px dashed #423630;
+    }
+
+    .btn-action {
+      border: none; padding: 0.4rem 0.9rem;
+      border-radius: 12px; font-size: 0.85rem;
+      font-weight: 700; cursor: pointer;
+    }
+
+    .btn-edit { background-color: #5c7f8a; color: #f5ebe6; }
+    .btn-delete { background-color: #b85b4d; color: #f5ebe6; }
+
+    .close-btn {
+      position: absolute; top: 15px; right: 20px;
+      color: #f5ebe6; font-size: 2.5rem; cursor: pointer; z-index: 210;
+    }
+
+    .modal-content {
+      background: #362c27;
+      padding: 1.8rem;
+      border-radius: 18px;
+      width: 90%; max-width: 400px;
+      box-shadow: 0 10px 35px rgba(0,0,0,0.5);
+      border: 2px solid #423630;
+    }
+
+    .modal-content h2 {
+      margin-bottom: 1.2rem;
+      color: #e8a598;
+      font-family: 'Caveat', cursive;
+      font-size: 2.3rem;
+      text-align: center;
+    }
+
+    .modal-buttons {
+      display: flex; justify-content: flex-end;
+      gap: 0.8rem; margin-top: 1.2rem;
+    }
+
+    .btn-cancel {
+      background: transparent; border: 1.5px solid #423630;
+      color: #d8cac4; padding: 0.5rem 1rem;
+      border-radius: 12px; cursor: pointer; font-weight: 600;
+    }
+
+    .btn-save {
+      background: #d88373; border: none; color: #fff;
+      padding: 0.5rem 1.2rem; border-radius: 12px;
+      cursor: pointer; font-weight: 700;
+    }
+
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+
+  <div class="auth-container" id="authSection">
+    <h2 id="authTitle">Bienvenido ✨</h2>
+    <p id="authSubtitle">Ingresa para ver los recuerdos compartidos</p>
+
+    <div class="auth-tabs">
+      <button class="auth-tab active" id="tabLogin" onclick="switchAuthTab('login')">Ingresar</button>
+      <button class="auth-tab" id="tabRegister" onclick="switchAuthTab('register')">Registrarse</button>
+    </div>
+
+    <form id="authForm">
+      <div class="form-group">
+        <label for="authEmail">Correo Electrónico</label>
+        <input type="email" id="authEmail" placeholder="tu@email.com" required>
+      </div>
+
+      <div class="form-group">
+        <label for="authPassword">Contraseña</label>
+        <input type="password" id="authPassword" placeholder="••••••••" required minlength="6">
+      </div>
+
+      <button type="submit" class="btn-submit" id="authBtn">Entrar</button>
+    </form>
+  </div>
+
+  <div id="albumSection" class="hidden" style="width: 100%; display: flex; flex-direction: column; align-items: center;">
+    <header class="app-header">
+      <h1>Nuestros Momentos Especiales ✨</h1>
+      <button class="btn-add" onclick="openFormModal()">+ Agregar Recuerdo</button>
+      
+      <div class="user-bar">
+        <span class="user-email" id="userEmailLabel"></span>
+        <button class="btn-logout" onclick="handleLogout()">Cerrar Sesión</button>
+      </div>
+    </header>
+
+    <div class="album-grid" id="albumGrid"></div>
+  </div>
+
+  <div class="lightbox-overlay" id="lightboxOverlay">
+    <span class="close-btn" onclick="closeLightbox()">&times;</span>
+    <div class="lightbox-card-container" id="lightboxContainer">
+      <div class="lightbox-card">
+        <div class="lightbox-front" onclick="toggleFlip()">
+          <img id="lightboxImg" src="" alt="Recuerdo">
+        </div>
+        <div class="lightbox-back">
+          <div class="lightbox-back-content" onclick="toggleFlip()">
+            <h3 id="lightboxTitle"></h3>
+            <p id="lightboxDesc"></p>
+            <span class="date" id="lightboxDate"></span>
+          </div>
+          
+          <div class="card-actions" id="adminActions">
+            <button class="btn-action btn-edit" onclick="editCurrentMemory()">✏️ Editar</button>
+            <button class="btn-action btn-delete" onclick="deleteCurrentMemory()">🗑️ Eliminar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="formModalOverlay">
+    <div class="modal-content">
+      <h2 id="modalTitle">Añadir Nuevo Recuerdo</h2>
+      <form id="memoryForm">
+        <input type="hidden" id="editIdInput">
+
+        <div class="form-group" id="photoGroup">
+          <label for="photoInput">Seleccionar Fotografía</label>
+          <input type="file" id="photoInput" accept="image/*" required>
+        </div>
+        
+        <div class="form-group">
+          <label for="titleInput">Título del Recuerdo</label>
+          <input type="text" id="titleInput" placeholder="Ej: Nuestro viaje a la playa" required>
+        </div>
+        
+        <div class="form-group">
+          <label for="dateInput">Fecha (DD/MM/AAAA)</label>
+          <input type="text" id="dateInput" placeholder="DD/MM/AAAA" maxlength="10" required>
+        </div>
+        
+        <div class="form-group">
+          <label for="descInput">Descripción / Mensaje</label>
+          <textarea id="descInput" placeholder="Escribe lo que sentiste o recuerdas de este día..." required></textarea>
+        </div>
+        
+        <div class="modal-buttons">
+          <button type="button" class="btn-cancel" onclick="closeFormModal()">Cancelar</button>
+          <button type="submit" id="saveBtn" class="btn-save">Guardar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    // CONFIGURACIÓN DE SUPABASE
+    const SUPABASE_URL = 'https://gkosxretzqpzgufuodlq.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdrb3N4cmV0enFwemd1ZnVvZGxxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcwMDM4MTYsImV4cCI6MjEwMjU3OTgxNn0.if2ma23Y6FQrE0hSFjZWfEU-dwlgnxKSewjovw_Ip_w';
+    
+    // CORREO DEL ADMINISTRADOR PRINCIPAL
+    // Reemplaza esto con tu correo real
+    const ADMIN_EMAIL = 'yoneiver84793@gmail.com';
+
+    const db = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    let currentUser = null;
+    let authMode = 'login';
+    let activeMemory = null;
+
+    // ELEMENTOS DEL DOM
+    const authSection = document.getElementById('authSection');
+    const albumSection = document.getElementById('albumSection');
+    const authForm = document.getElementById('authForm');
+    const authTitle = document.getElementById('authTitle');
+    const authSubtitle = document.getElementById('authSubtitle');
+    const authBtn = document.getElementById('authBtn');
+    const tabLogin = document.getElementById('tabLogin');
+    const tabRegister = document.getElementById('tabRegister');
+    const userEmailLabel = document.getElementById('userEmailLabel');
+
+    const formModalOverlay = document.getElementById('formModalOverlay');
+    const memoryForm = document.getElementById('memoryForm');
+    const albumGrid = document.getElementById('albumGrid');
+    const saveBtn = document.getElementById('saveBtn');
+    const modalTitle = document.getElementById('modalTitle');
+    const editIdInput = document.getElementById('editIdInput');
+    const photoInput = document.getElementById('photoInput');
+
+    const lightboxOverlay = document.getElementById('lightboxOverlay');
+    const lightboxContainer = document.getElementById('lightboxContainer');
+    const lightboxImg = document.getElementById('lightboxImg');
+    const lightboxTitle = document.getElementById('lightboxTitle');
+    const lightboxDesc = document.getElementById('lightboxDesc');
+    const lightboxDate = document.getElementById('lightboxDate');
+    const dateInput = document.getElementById('dateInput');
+
+    // AUTENTICACIÓN
+    function switchAuthTab(mode) {
+      authMode = mode;
+      if (mode === 'login') {
+        tabLogin.classList.add('active');
+        tabRegister.classList.remove('active');
+        authTitle.textContent = 'Bienvenido ✨';
+        authSubtitle.textContent = 'Ingresa para ver los recuerdos compartidos';
+        authBtn.textContent = 'Entrar';
+      } else {
+        tabRegister.classList.add('active');
+        tabLogin.classList.remove('active');
+        authTitle.textContent = 'Crea tu Cuenta ❤️';
+        authSubtitle.textContent = 'Guarda tus momentos especiales en el álbum';
+        authBtn.textContent = 'Registrarse';
+      }
+    }
+
+    authForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = document.getElementById('authEmail').value;
+      const password = document.getElementById('authPassword').value;
+
+      try {
+        authBtn.disabled = true;
+        authBtn.textContent = 'Cargando...';
+
+        if (authMode === 'register') {
+          const { data, error } = await db.auth.signUp({ email, password });
+          if (error) throw error;
+          alert('¡Registro exitoso! Ya puedes ingresar.');
+          switchAuthTab('login');
+        } else {
+          const { data, error } = await db.auth.signInWithPassword({ email, password });
+          if (error) throw error;
+          checkUserSession();
+        }
+      } catch (err) {
+        alert('Error: ' + err.message);
+      } finally {
+        authBtn.disabled = false;
+        authBtn.textContent = authMode === 'login' ? 'Entrar' : 'Registrarse';
+      }
+    });
+
+    async function handleLogout() {
+      await db.auth.signOut();
+      checkUserSession();
+    }
+
+    async function checkUserSession() {
+      const { data: { session } } = await db.auth.getSession();
+      
+      if (session) {
+        currentUser = session.user;
+        
+        // Muestra el correo y añade la etiqueta (Admin) si coincide con ADMIN_EMAIL
+        if (currentUser.email === ADMIN_EMAIL) {
+          userEmailLabel.innerHTML = `${currentUser.email} <span class="admin-badge">Admin</span>`;
+        } else {
+          userEmailLabel.textContent = currentUser.email;
+        }
+
+        authSection.classList.add('hidden');
+        albumSection.classList.remove('hidden');
+        fetchMemories();
+      } else {
+        currentUser = null;
+        albumSection.classList.add('hidden');
+        authSection.classList.remove('hidden');
+      }
+    }
+
+    db.auth.onAuthStateChange((_event, session) => {
+      if (session) {
+        currentUser = session.user;
+        
+        if (currentUser.email === ADMIN_EMAIL) {
+          userEmailLabel.innerHTML = `${currentUser.email} <span class="admin-badge">Admin</span>`;
+        } else {
+          userEmailLabel.textContent = currentUser.email;
+        }
+
+        authSection.classList.add('hidden');
+        albumSection.classList.remove('hidden');
+        fetchMemories();
+      } else {
+        currentUser = null;
+        albumSection.classList.add('hidden');
+        authSection.classList.remove('hidden');
+      }
+    });
+
+    // MODAL & LIGHTBOX
+    function openFormModal(isEdit = false) {
+      if (isEdit) {
+        modalTitle.textContent = "Editar Recuerdo";
+        photoInput.required = false;
+      } else {
+        modalTitle.textContent = "Añadir Nuevo Recuerdo";
+        editIdInput.value = "";
+        memoryForm.reset();
+        photoInput.required = true;
+      }
+      formModalOverlay.classList.add('active');
+    }
+
+    function closeFormModal() {
+      formModalOverlay.classList.remove('active');
+      memoryForm.reset();
+    }
+
+    function openLightbox(item) {
+      activeMemory = item;
+      lightboxImg.src = item.image_url;
+      lightboxTitle.textContent = item.title;
+      lightboxDesc.textContent = item.description;
+      lightboxDate.textContent = item.date;
+      lightboxContainer.classList.remove('flipped');
+      lightboxOverlay.classList.add('active');
+    }
+
+    function closeLightbox() {
+      lightboxOverlay.classList.remove('active');
+      activeMemory = null;
+    }
+
+    function toggleFlip() {
+      lightboxContainer.classList.toggle('flipped');
+    }
+
+    dateInput.addEventListener('input', function(e) {
+      let value = e.target.value.replace(/\D/g, '');
+      if (value.length > 2 && value.length <= 4) {
+        value = value.slice(0, 2) + '/' + value.slice(2);
+      } else if (value.length > 4) {
+        value = value.slice(0, 2) + '/' + value.slice(2, 4) + '/' + value.slice(4, 8);
+      }
+      e.target.value = value;
+    });
+
+    function handleCardClick(thumbCard, item) {
+      thumbCard.classList.add('revealed');
+      setTimeout(() => openLightbox(item), 250);
+    }
+
+    function renderCard(item) {
+      const thumbCard = document.createElement('div');
+      thumbCard.className = 'thumb-card';
+      thumbCard.id = `card-${item.id}`;
+      thumbCard.innerHTML = `
+        <img src="${item.image_url}" alt="${item.title}">
+        <div class="heart-cover">
+          <div class="heart-icon">💘</div>
+          <span>Revelar</span>
+        </div>
+      `;
+      thumbCard.onclick = () => handleCardClick(thumbCard, item);
+      albumGrid.appendChild(thumbCard);
+    }
+
+    // BASE DE DATOS
+    async function fetchMemories() {
+      try {
+        const { data, error } = await db
+          .from('recuerdos')
+          .select('*')
+          .order('created_at', { ascending: false });
+
+        if (error) throw error;
+
+        albumGrid.innerHTML = '';
+        if (data) {
+          data.forEach(item => renderCard(item));
+        }
+      } catch (err) {
+        console.error('Error al cargar recuerdos:', err.message);
+      }
+    }
+
+    memoryForm.addEventListener('submit', async function(e) {
+      e.preventDefault();
+      if (!currentUser) return;
+
+      const id = editIdInput.value;
+      const title = document.getElementById('titleInput').value;
+      const date = dateInput.value;
+      const desc = document.getElementById('descInput').value;
+      const file = photoInput.files[0];
+
+      try {
+        saveBtn.disabled = true;
+        saveBtn.textContent = 'Guardando...';
+
+        let imageUrl = activeMemory ? activeMemory.image_url : '';
+
+        if (file) {
+          const fileExt = file.name.split('.').pop();
+          const fileName = `${currentUser.id}_${Date.now()}.${fileExt}`;
+          const filePath = `uploads/${fileName}`;
+
+          const { error: uploadError } = await db.storage
+            .from('memories-images')
+            .upload(filePath, file);
+
+          if (uploadError) throw uploadError;
+
+          const { data: publicUrlData } = db.storage
+            .from('memories-images')
+            .getPublicUrl(filePath);
+
+          imageUrl = publicUrlData.publicUrl;
+        }
+
+        if (id) {
+          const { error: dbError } = await db
+            .from('recuerdos')
+            .update({ title, description: desc, date, image_url: imageUrl })
+            .eq('id', id);
+
+          if (dbError) throw dbError;
+        } else {
+          const { error: dbError } = await db
+            .from('recuerdos')
+            .insert([{ title, description: desc, date, image_url: imageUrl, user_id: currentUser.id }]);
+
+          if (dbError) throw dbError;
+        }
+
+        closeFormModal();
+        closeLightbox();
+        fetchMemories();
+      } catch (err) {
+        alert('Error al guardar: ' + err.message);
+      } finally {
+        saveBtn.disabled = false;
+        saveBtn.textContent = 'Guardar';
+      }
+    });
+
+    function editCurrentMemory() {
+      if (!activeMemory) return;
+      editIdInput.value = activeMemory.id;
+      document.getElementById('titleInput').value = activeMemory.title;
+      dateInput.value = activeMemory.date;
+      document.getElementById('descInput').value = activeMemory.description;
+      openFormModal(true);
+    }
+
+    async function deleteCurrentMemory() {
+      if (!activeMemory || !currentUser) return;
+
+      if (!confirm(`¿Deseas eliminar "${activeMemory.title}"?`)) return;
+
+      try {
+        const { error: dbError } = await db
+          .from('recuerdos')
+          .delete()
+          .eq('id', activeMemory.id);
+
+        if (dbError) throw dbError;
+
+        closeLightbox();
+        fetchMemories();
+      } catch (err) {
+        alert('Error al eliminar: ' + err.message);
+      }
+    }
+
+    checkUserSession();
+  </script>
+</body>
+</html>
